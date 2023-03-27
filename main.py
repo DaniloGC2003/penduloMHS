@@ -6,7 +6,7 @@ WINDOW_WIDTH = 1200
 WINDOW_HEIGHT = 800
 POS_INICIAL = (400, 50)  # posicao do fio
 ACELERACAO_GRAVIDADE = 9.8
-MILISEGUNDO_PARA_SEGUNDO = 1000
+MILISEGUNDO_PARA_SEGUNDO = 1000 #fator de conversao
 CLICOU = 1
 NAO_CLICOU = 0
 
@@ -27,13 +27,13 @@ class Botao:
         self.selected = False
         self.clicked = False
 
-    def checkHovering(self):
+    def checkHovering(self):#verifica se o mouse se encontra sobre o botao
         mousePos = pygame.mouse.get_pos()
         if (mousePos[0] > self.pos[0] and mousePos[0] < self.pos[0] + self.size[0]) and (mousePos[1] > self.pos[1] and mousePos[1] < self.pos[1] + self.size[1]):
             return True
         return False
 
-    def exec(self, window):
+    def exec(self, window):#funcao principal de acao do botao
         clicou = False
         if self.checkHovering():
             self.currentColor = self.selectedColor
@@ -66,7 +66,6 @@ class BotaoDeslizante:
         self.selectedColor = selectedColor
         self.currentColor = unselectedColor
 
-        # self.map_range(self.buttonPos[0], self.pos[0], self.pos[0] + self.size[0], self.min, self.max)#min
         self.currentValue = min
 
         self.buttonPos = [self.pos[0], self.pos[1] + 5]
@@ -77,20 +76,19 @@ class BotaoDeslizante:
         self.min = min
         self.max = max
 
-    def checkHovering(self):
+    def checkHovering(self):#verifica se o mouse se encontra sobre o botao
         mousePos = pygame.mouse.get_pos()
         if math.sqrt((self.buttonPos[0] - mousePos[0])**2 + (self.buttonPos[1] - mousePos[1])**2) < self.buttonRadius:
             return True
         return False
 
-    def map_range(self, x, in_min, in_max, out_min, out_max):
+    def map_range(self, x, in_min, in_max, out_min, out_max):#mapeia um intervalo a outro de forma linear
         return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
 
-    def exec(self, window):
-        if self.checkHovering():
+    def exec(self, window):#funcao principal
+        if self.checkHovering():#acao no caso em que o botao eh clicado
             self.currentColor = self.selectedColor
             if pygame.mouse.get_pressed()[0] == 1 and self.clicked == False:
-                print('fala')
                 self.clicked = True
             elif pygame.mouse.get_pressed()[0] == 0:
                 self.clicked = False
@@ -98,9 +96,10 @@ class BotaoDeslizante:
             self.currentColor = self.unselectedColor
             self.clicked = False
 
-        if self.clicked == True and pygame.mouse.get_pos()[0] > self.pos[0] and pygame.mouse.get_pos()[0] < self.pos[0] + self.size[0]:
+        if self.clicked == True and pygame.mouse.get_pos()[0] > self.pos[0] and pygame.mouse.get_pos()[0] < self.pos[0] + self.size[0]:#arrastar o botao
             self.buttonPos[0] = pygame.mouse.get_pos()[0]
 
+        #desenhar o botao
         pygame.draw.rect(window, (115, 115, 115), [
                          self.pos[0], self.pos[1], self.size[0], self.size[1]])
         pygame.draw.circle(
@@ -122,6 +121,12 @@ class GUI:  # controle de parametros do pendulo
             (WINDOW_WIDTH - 400 + 50, 300), 'Comprimento (m)', (7, 242, 70), (3, 163, 46), 0.01, 0.7)
         self.amplitudePendulo = BotaoDeslizante(
             (WINDOW_WIDTH - 400 + 50, 500), 'Amplitude (rad)', (7, 242, 70), (3, 163, 46), 0.01, math.pi / 2)
+        
+        self.font = pygame.font.Font(None, 35)
+        self.textoLinha1 = 'Utilize os botões para alterar'
+        self.textoLinha2 = 'os parametros do pêndulo'
+        self.texto1Surface = self.font.render(self.textoLinha1, True, (0, 0, 0))
+        self.texto2Surface = self.font.render(self.textoLinha2, True, (0, 0, 0))
 
     def exec(self, window):
         pygame.draw.rect(window, (0, 0, 0), [WINDOW_WIDTH - 400, 5, 395, 790])
@@ -130,6 +135,11 @@ class GUI:  # controle de parametros do pendulo
         atualizaParametros = self.enterButton.exec(window)
         self.comprimentoPendulo.exec(window)
         self.amplitudePendulo.exec(window)
+
+        self.texto1Surface = self.font.render(self.textoLinha1, True, (0, 0, 0))
+        window.blit(self.texto1Surface, (830, 100))
+        self.texto2Surface = self.font.render(self.textoLinha2, True, (0, 0, 0))
+        window.blit(self.texto2Surface, (830, 150))
 
         return atualizaParametros
 
@@ -153,7 +163,7 @@ class Pendulo:  # x(t) = A cos(sqrt(g/L)t); x(0) = A
         pygame.draw.circle(window, (3, 252, 165),
                            (self.x, self.y), self.raio_bola - 2)
 
-    def calcula_angulo(self):
+    def calcula_angulo(self):#calcula posicao do pendulo de acordo com a funcao do MHS
         return self.anguloMax * math.cos(self.freqAngular * (pygame.time.get_ticks() - self.tempoInicio) / MILISEGUNDO_PARA_SEGUNDO)
 
     def calcula_posicao(self):
@@ -180,7 +190,7 @@ class Main:
         self.clock = pygame.time.Clock()
         self.framerate = 60  # 60 fps.
 
-        # 0.248 metros para ter periodo de 1 segundo, pi/6. max:0.7 para comprimento
+        # 0.248 metros para ter periodo de 1 segundo, max:0.7
         self.pendulo = Pendulo(
             0.248, math.pi / 6, pygame.time.get_ticks() / MILISEGUNDO_PARA_SEGUNDO)
         self.gui = GUI()
