@@ -120,7 +120,7 @@ class GUI:  # controle de parametros do pendulo
         self.comprimentoPendulo = BotaoDeslizante(
             (WINDOW_WIDTH - 400 + 50, 300), 'Comprimento (m)', (7, 242, 70), (3, 163, 46), 0.01, 0.7)
         self.amplitudePendulo = BotaoDeslizante(
-            (WINDOW_WIDTH - 400 + 50, 500), 'Amplitude (rad)', (7, 242, 70), (3, 163, 46), 0.01, math.pi / 2)
+            (WINDOW_WIDTH - 400 + 50, 500), 'Amplitude (rad)', (7, 242, 70), (3, 163, 46), 0.01, 0.5)
         
         self.font = pygame.font.Font(None, 35)
         self.textoLinha1 = 'Utilize os botões para alterar'
