@@ -142,6 +142,11 @@ class GUI:  # controle de parametros do pendulo
         self.texto2Surface = self.font.render(self.textoLinha2, True, (0, 0, 0))
         window.blit(self.texto2Surface, (830, 150))
 
+        #desenha barra de energia
+        pygame.draw.rect(window, (255, 0, 0), [100, 600, energiacinetica * 100, 50])
+        self.energiacineticaSurface = self.font.render(str(round(energiacinetica, 2)), True, (0, 0, 0))
+        window.blit(self.energiacineticaSurface, (50, 600))
+
         #mostra energia
 
         return atualizaParametros
@@ -162,6 +167,7 @@ class Pendulo:  # x(t) = A cos(sqrt(g/L)t); x(0) = A
         self.energiapotencial = 0
 
         self.tempoInicio = tempoInicio
+        self.mass = 1#kg
 
     def draw(self, window):  # desenha pendulo
         pygame.draw.line(window, (0, 0, 0), POS_INICIAL, (self.x, self.y), 2)
@@ -173,15 +179,24 @@ class Pendulo:  # x(t) = A cos(sqrt(g/L)t); x(0) = A
         return self.anguloMax * math.cos(self.freqAngular * (pygame.time.get_ticks() - self.tempoInicio) / MILISEGUNDO_PARA_SEGUNDO)
 
     def calcula_posicao(self):
-        angulo = self.calcula_angulo()
+        self.angulo = self.calcula_angulo()
         self.x = POS_INICIAL[0] + self.comprimento * \
-            UM_METRO * math.sin(angulo)
+            UM_METRO * math.sin(self.angulo)
         self.y = POS_INICIAL[1] + self.comprimento * \
-            UM_METRO * math.cos(angulo)
+            UM_METRO * math.cos(self.angulo)
+
+    def calcula_ec(self):#energia cinetica
+        velocidade = -self.anguloMax * self.freqAngular * math.sin(self.freqAngular * (pygame.time.get_ticks() - self.tempoInicio) / MILISEGUNDO_PARA_SEGUNDO)
+
+        return self.mass * (velocidade**2) / 2
+    
+    def calculaep(self):#energia potencial
+        return self.mass * ACELERACAO_GRAVIDADE * (self.y - (WINDOW_HEIGHT - self.comprimento))
 
     def exec(self, window):
         self.calcula_posicao()
         self.freqAngular = math.sqrt(ACELERACAO_GRAVIDADE / self.comprimento)
+        self.energiacinetica = self.calcula_ec()
         self.draw(window)
 
 
