@@ -127,8 +127,9 @@ class GUI:  # controle de parametros do pendulo
         self.textoLinha2 = 'os parametros do pêndulo'
         self.texto1Surface = self.font.render(self.textoLinha1, True, (0, 0, 0))
         self.texto2Surface = self.font.render(self.textoLinha2, True, (0, 0, 0))
+        self.energiacineticaSurface = self.font.render('0', True, (0, 0, 0))
 
-    def exec(self, window):
+    def exec(self, window, energiacinetica):
         pygame.draw.rect(window, (0, 0, 0), [WINDOW_WIDTH - 400, 5, 395, 790])
         pygame.draw.rect(window, (146, 232, 183), [
                          WINDOW_WIDTH - 395, 10, 385, 780])
@@ -140,6 +141,8 @@ class GUI:  # controle de parametros do pendulo
         window.blit(self.texto1Surface, (830, 100))
         self.texto2Surface = self.font.render(self.textoLinha2, True, (0, 0, 0))
         window.blit(self.texto2Surface, (830, 150))
+
+        #mostra energia
 
         return atualizaParametros
 
@@ -154,6 +157,9 @@ class Pendulo:  # x(t) = A cos(sqrt(g/L)t); x(0) = A
         self.anguloMax = anguloMax
         self.angulo = anguloMax  # angulo em que o pendulo se encontra atualmente
         self.freqAngular = math.sqrt(ACELERACAO_GRAVIDADE / comprimento)
+
+        self.energiacinetica = 0
+        self.energiapotencial = 0
 
         self.tempoInicio = tempoInicio
 
@@ -205,7 +211,7 @@ class Main:
             self.clock.tick(self.framerate)
             self.window.fill((204, 204, 204))
             self.pendulo.exec(self.window)
-            atualizaParametros = self.gui.exec(self.window)
+            atualizaParametros = self.gui.exec(self.window, self.pendulo.energiacinetica)
             if atualizaParametros == CLICOU:
                 self.pendulo.comprimento = self.gui.comprimentoPendulo.currentValue
                 self.pendulo.anguloMax = self.gui.amplitudePendulo.currentValue
