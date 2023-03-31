@@ -124,12 +124,18 @@ class GUI:  # controle de parametros do pendulo
         
         self.font = pygame.font.Font(None, 35)
         self.textoLinha1 = 'Utilize os botões para alterar'
-        self.textoLinha2 = 'os parametros do pêndulo'
+        self.textoLinha2 = 'os parâmetros do pêndulo'
         self.texto1Surface = self.font.render(self.textoLinha1, True, (0, 0, 0))
         self.texto2Surface = self.font.render(self.textoLinha2, True, (0, 0, 0))
         self.energiacineticaSurface = self.font.render('0', True, (0, 0, 0))
+        self.energiapotencialSurface = self.font.render('0', True, (0, 0, 0))
+        self.zeroSurface = self.font.render('0 J', True, (0, 0, 0))
+        self.energiaMaxSurface = self.font.render('0', True, (0, 0, 0))
 
-    def exec(self, window, energiacinetica):
+    def map_range(self, x, in_min, in_max, out_min, out_max):#mapeia um intervalo a outro de forma linear
+        return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
+
+    def exec(self, window, energiacinetica, energiapotencial, energiaMax):
         pygame.draw.rect(window, (0, 0, 0), [WINDOW_WIDTH - 400, 5, 395, 790])
         pygame.draw.rect(window, (146, 232, 183), [
                          WINDOW_WIDTH - 395, 10, 385, 780])
@@ -142,12 +148,29 @@ class GUI:  # controle de parametros do pendulo
         self.texto2Surface = self.font.render(self.textoLinha2, True, (0, 0, 0))
         window.blit(self.texto2Surface, (830, 150))
 
-        #desenha barra de energia
-        pygame.draw.rect(window, (255, 0, 0), [100, 600, energiacinetica * 100, 50])
-        self.energiacineticaSurface = self.font.render(str(round(energiacinetica, 2)), True, (0, 0, 0))
-        window.blit(self.energiacineticaSurface, (50, 600))
+        #desenha barras de energia maxima
+        pygame.draw.rect(window, (115, 115, 115), [450, 600, 200, 50])
+        pygame.draw.rect(window, (115, 115, 115), [450, 670, 200, 50])
 
-        #mostra energia
+        #desenha barra de energia cinetica
+        pygame.draw.rect(window, (255, 0, 0), [450, 600, self.map_range(energiacinetica, 0, energiaMax, 0, 200), 50])
+        self.energiacineticaSurface = self.font.render('Energia cinética(J): ' + str(round(energiacinetica, 3)), True, (0, 0, 0))
+        window.blit(self.energiacineticaSurface, (35, 610))
+
+        #desenha barra de energia potencial
+        pygame.draw.rect(window, (0, 0, 255), [450, 670, self.map_range(energiapotencial, 0, energiaMax, 0, 200), 50])
+        self.energiapotencialSurface = self.font.render('Energia gravitacional (J): ' + str(round(energiapotencial, 3)), True, (0, 0, 0))
+        window.blit(self.energiapotencialSurface, (35, 680))
+
+        #desenha limites das barras
+        pygame.draw.rect(window, (0, 0, 0), [445, 600, 5, 120])
+        window.blit(self.zeroSurface, (440, 730))
+        self.energiaMaxSurface = self.font.render(str(round(energiaMax, 3)) + ' J', True, (0, 0, 0))
+        window.blit(self.energiaMaxSurface, (640, 730))
+
+
+
+        #print(round(energiaMax, 2))
 
         return atualizaParametros
 
@@ -165,6 +188,7 @@ class Pendulo:  # x(t) = A cos(sqrt(g/L)t); x(0) = A
 
         self.energiacinetica = 0
         self.energiapotencial = 0
+        self.energiaMax = 0
 
         self.tempoInicio = tempoInicio
         self.mass = 1#kg
@@ -186,17 +210,22 @@ class Pendulo:  # x(t) = A cos(sqrt(g/L)t); x(0) = A
             UM_METRO * math.cos(self.angulo)
 
     def calcula_ec(self):#energia cinetica
-        velocidade = -self.anguloMax * self.freqAngular * math.sin(self.freqAngular * (pygame.time.get_ticks() - self.tempoInicio) / MILISEGUNDO_PARA_SEGUNDO)
+        velocidadeAngular = -self.anguloMax * self.freqAngular * math.sin(self.freqAngular * (pygame.time.get_ticks() - self.tempoInicio) / MILISEGUNDO_PARA_SEGUNDO)
 
-        return self.mass * (velocidade**2) / 2
+        velocidadeLinear = velocidadeAngular * self.comprimento
+
+        return self.mass * (velocidadeLinear**2) / 2
     
-    def calculaep(self):#energia potencial
-        return self.mass * ACELERACAO_GRAVIDADE * (self.y - (WINDOW_HEIGHT - self.comprimento))
+    def calcula_ep(self):#energia potencial
+        return self.mass * ACELERACAO_GRAVIDADE * (self.comprimento - self.comprimento * math.cos(self.angulo))
 
     def exec(self, window):
         self.calcula_posicao()
         self.freqAngular = math.sqrt(ACELERACAO_GRAVIDADE / self.comprimento)
         self.energiacinetica = self.calcula_ec()
+        self.energiapotencial = self.calcula_ep()
+        self.energiaMax = self.mass * ACELERACAO_GRAVIDADE * (self.comprimento - self.comprimento * math.cos(self.anguloMax))
+
         self.draw(window)
 
 
@@ -226,7 +255,7 @@ class Main:
             self.clock.tick(self.framerate)
             self.window.fill((204, 204, 204))
             self.pendulo.exec(self.window)
-            atualizaParametros = self.gui.exec(self.window, self.pendulo.energiacinetica)
+            atualizaParametros = self.gui.exec(self.window, self.pendulo.energiacinetica, self.pendulo.energiapotencial, self.pendulo.energiaMax)
             if atualizaParametros == CLICOU:
                 self.pendulo.comprimento = self.gui.comprimentoPendulo.currentValue
                 self.pendulo.anguloMax = self.gui.amplitudePendulo.currentValue
