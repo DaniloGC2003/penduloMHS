@@ -17,7 +17,7 @@ class Botao:
         super().__init__()
         self.pos = pos
         self.size = size
-        self.text = text
+        self.text = text #string
         self.font = pygame.font.Font(None, 80)
         self.textSurface = self.font.render(text, True, (0, 0, 0))
         self.unselectedColor = unselectedColor
@@ -33,7 +33,7 @@ class Botao:
             return True
         return False
 
-    def exec(self, window):#funcao principal de acao do botao
+    def exec(self, window):#funcao principal de acao do botao. verifica cliques e se desenha na tela
         clicou = False
         if self.checkHovering():
             self.currentColor = self.selectedColor
@@ -135,7 +135,7 @@ class GUI:  # controle de parametros do pendulo
     def map_range(self, x, in_min, in_max, out_min, out_max):#mapeia um intervalo a outro de forma linear
         return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
 
-    def exec(self, window, energiacinetica, energiapotencial, energiaMax):
+    def exec(self, window, energiacinetica, energiapotencial, energiaMax):#desenha elementos na tela; chama funcao exec de seus objetos
         pygame.draw.rect(window, (0, 0, 0), [WINDOW_WIDTH - 400, 5, 395, 790])
         pygame.draw.rect(window, (146, 232, 183), [
                          WINDOW_WIDTH - 395, 10, 385, 780])
@@ -162,15 +162,11 @@ class GUI:  # controle de parametros do pendulo
         self.energiapotencialSurface = self.font.render('Energia gravitacional (J): ' + str(round(energiapotencial, 3)), True, (0, 0, 0))
         window.blit(self.energiapotencialSurface, (35, 680))
 
-        #desenha limites das barras
+        #desenha limite das barras
         pygame.draw.rect(window, (0, 0, 0), [445, 600, 5, 120])
         window.blit(self.zeroSurface, (440, 730))
         self.energiaMaxSurface = self.font.render(str(round(energiaMax, 3)) + ' J', True, (0, 0, 0))
         window.blit(self.energiaMaxSurface, (640, 730))
-
-
-
-        #print(round(energiaMax, 2))
 
         return atualizaParametros
 
@@ -180,8 +176,9 @@ class Pendulo:  # x(t) = A cos(sqrt(g/L)t); x(0) = A
         # pendulo comeca na posicao maxima
         self.x = POS_INICIAL[0] + comprimento * UM_METRO * math.sin(anguloMax)
         self.y = POS_INICIAL[1] + comprimento * UM_METRO * math.cos(anguloMax)
+
         self.raio_bola = 20
-        self.comprimento = comprimento
+        self.comprimento = comprimento#comprimento em metros
         self.anguloMax = anguloMax
         self.angulo = anguloMax  # angulo em que o pendulo se encontra atualmente
         self.freqAngular = math.sqrt(ACELERACAO_GRAVIDADE / comprimento)
@@ -199,10 +196,10 @@ class Pendulo:  # x(t) = A cos(sqrt(g/L)t); x(0) = A
         pygame.draw.circle(window, (3, 252, 165),
                            (self.x, self.y), self.raio_bola - 2)
 
-    def calcula_angulo(self):#calcula posicao do pendulo de acordo com a funcao do MHS
+    def calcula_angulo(self):#calcula angulo do pendulo de acordo com a funcao do MHS
         return self.anguloMax * math.cos(self.freqAngular * (pygame.time.get_ticks() - self.tempoInicio) / MILISEGUNDO_PARA_SEGUNDO)
 
-    def calcula_posicao(self):
+    def calcula_posicao(self):#calcula posicao do pendulo na tela
         self.angulo = self.calcula_angulo()
         self.x = POS_INICIAL[0] + self.comprimento * \
             UM_METRO * math.sin(self.angulo)
@@ -216,10 +213,10 @@ class Pendulo:  # x(t) = A cos(sqrt(g/L)t); x(0) = A
 
         return self.mass * (velocidadeLinear**2) / 2
     
-    def calcula_ep(self):#energia potencial
+    def calcula_ep(self):#energia potencial gravitacional
         return self.mass * ACELERACAO_GRAVIDADE * (self.comprimento - self.comprimento * math.cos(self.angulo))
 
-    def exec(self, window):
+    def exec(self, window):#desenha pendulo, chama funcoes de calcular posicao e energia
         self.calcula_posicao()
         self.freqAngular = math.sqrt(ACELERACAO_GRAVIDADE / self.comprimento)
         self.energiacinetica = self.calcula_ec()
@@ -240,19 +237,19 @@ class Main:
         self.clock = pygame.time.Clock()
         self.framerate = 60  # 60 fps.
 
-        # 0.248 metros para ter periodo de 1 segundo, max:0.7
+        # parametros iniciais: 0.248 metros para ter periodo de 1 segundo, max:0.7
         self.pendulo = Pendulo(
             0.248, math.pi / 6, pygame.time.get_ticks() / MILISEGUNDO_PARA_SEGUNDO)
         self.gui = GUI()
 
-    def run(self):
+    def run(self):#loop principal
 
         while self.running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running = False
 
-            self.clock.tick(self.framerate)
+            self.clock.tick(self.framerate)#limita a taxa de quadros por segundo
             self.window.fill((204, 204, 204))
             self.pendulo.exec(self.window)
             atualizaParametros = self.gui.exec(self.window, self.pendulo.energiacinetica, self.pendulo.energiapotencial, self.pendulo.energiaMax)
