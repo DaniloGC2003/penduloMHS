@@ -10,6 +10,6 @@ Além disso, é mostrado o valor da energia mecânica do pêndulo, que é compos
   
 Inicialmente, o pêndulo executa um MHS com comprimento de 0,248 metros (o que faz com que o período seja de 1 segundo) e amplitude π/6 radianos.  
 
-Para utilizar o simulador, basta baixar o arquivo executável penduloMHS.exe. Não é necessário ter o python instalado em sua máquina para rodar o programa.
+Para utilizar o simulador, basta baixar o arquivo executável penduloMHS.exe (disponível em https://github.com/DaniloGC2003/penduloMHS). Não é necessário ter o python instalado em sua máquina para rodar o programa.
 
 Autor: Danilo Gondo Chinen
