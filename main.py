@@ -27,13 +27,15 @@ class Botao:
         self.selected = False
         self.clicked = False
 
-    def checkHovering(self):#verifica se o mouse se encontra sobre o botao
+    #verifica se o mouse se encontra sobre o botao. 
+    def checkHovering(self):
         mousePos = pygame.mouse.get_pos()
         if (mousePos[0] > self.pos[0] and mousePos[0] < self.pos[0] + self.size[0]) and (mousePos[1] > self.pos[1] and mousePos[1] < self.pos[1] + self.size[1]):
             return True
         return False
 
-    def exec(self, window):#funcao principal de acao do botao. verifica cliques e se desenha na tela
+    #funcao principal de acao do botao. verifica cliques e desenha o botao na tela
+    def exec(self, window):
         clicou = False
         if self.checkHovering():
             self.currentColor = self.selectedColor
@@ -76,16 +78,19 @@ class BotaoDeslizante:
         self.min = min
         self.max = max
 
-    def checkHovering(self):#verifica se o mouse se encontra sobre o botao
+    #verifica se o mouse se encontra sobre o botao
+    def checkHovering(self):
         mousePos = pygame.mouse.get_pos()
         if math.sqrt((self.buttonPos[0] - mousePos[0])**2 + (self.buttonPos[1] - mousePos[1])**2) < self.buttonRadius:
             return True
         return False
 
-    def map_range(self, x, in_min, in_max, out_min, out_max):#mapeia um intervalo a outro de forma linear
+    #mapeia um intervalo a outro de forma linear
+    def map_range(self, x, in_min, in_max, out_min, out_max):
         return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
 
-    def exec(self, window):#funcao principal
+    #funcao principal. Verifica interacao do usuario com o botao e o desenha na tela
+    def exec(self, window):
         if self.checkHovering():#acao no caso em que o botao eh clicado
             self.currentColor = self.selectedColor
             if pygame.mouse.get_pressed()[0] == 1 and self.clicked == False:
@@ -132,10 +137,12 @@ class GUI:  # controle de parametros do pendulo
         self.zeroSurface = self.font.render('0 J', True, (0, 0, 0))
         self.energiaMaxSurface = self.font.render('0', True, (0, 0, 0))
 
-    def map_range(self, x, in_min, in_max, out_min, out_max):#mapeia um intervalo a outro de forma linear
+    #mapeia um intervalo a outro de forma linear
+    def map_range(self, x, in_min, in_max, out_min, out_max):
         return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
 
-    def exec(self, window, energiacinetica, energiapotencial, energiaMax):#desenha elementos na tela; chama funcao exec de seus objetos
+    #desenha elementos na tela; chama funcao exec de seus objetos
+    def exec(self, window, energiacinetica, energiapotencial, energiaMax):
         pygame.draw.rect(window, (0, 0, 0), [WINDOW_WIDTH - 400, 5, 395, 790])
         pygame.draw.rect(window, (146, 232, 183), [
                          WINDOW_WIDTH - 395, 10, 385, 780])
@@ -190,33 +197,39 @@ class Pendulo:  # x(t) = A cos(sqrt(g/L)t); x(0) = A
         self.tempoInicio = tempoInicio
         self.mass = 1#kg
 
-    def draw(self, window):  # desenha pendulo
+    # desenha pendulo
+    def draw(self, window):  
         pygame.draw.line(window, (0, 0, 0), POS_INICIAL, (self.x, self.y), 2)
         pygame.draw.circle(window, (0, 0, 0), (self.x, self.y), self.raio_bola)
         pygame.draw.circle(window, (3, 252, 165),
                            (self.x, self.y), self.raio_bola - 2)
 
-    def calcula_angulo(self):#calcula angulo do pendulo de acordo com a funcao do MHS
+    #calcula angulo do pendulo de acordo com a funcao do MHS
+    def calcula_angulo(self):
         return self.anguloMax * math.cos(self.freqAngular * (pygame.time.get_ticks() - self.tempoInicio) / MILISEGUNDO_PARA_SEGUNDO)
 
-    def calcula_posicao(self):#calcula posicao do pendulo na tela
+    #calcula posicao do pendulo na tela
+    def calcula_posicao(self):
         self.angulo = self.calcula_angulo()
         self.x = POS_INICIAL[0] + self.comprimento * \
             UM_METRO * math.sin(self.angulo)
         self.y = POS_INICIAL[1] + self.comprimento * \
             UM_METRO * math.cos(self.angulo)
 
-    def calcula_ec(self):#energia cinetica
+    #energia cinetica
+    def calcula_ec(self):
         velocidadeAngular = -self.anguloMax * self.freqAngular * math.sin(self.freqAngular * (pygame.time.get_ticks() - self.tempoInicio) / MILISEGUNDO_PARA_SEGUNDO)
 
         velocidadeLinear = velocidadeAngular * self.comprimento
 
         return self.mass * (velocidadeLinear**2) / 2
     
-    def calcula_ep(self):#energia potencial gravitacional
+    #energia potencial gravitacional
+    def calcula_ep(self):
         return self.mass * ACELERACAO_GRAVIDADE * (self.comprimento - self.comprimento * math.cos(self.angulo))
 
-    def exec(self, window):#desenha pendulo, chama funcoes de calcular posicao e energia
+    #desenha pendulo, chama funcoes de calcular posicao e energia
+    def exec(self, window):
         self.calcula_posicao()
         self.freqAngular = math.sqrt(ACELERACAO_GRAVIDADE / self.comprimento)
         self.energiacinetica = self.calcula_ec()
@@ -242,7 +255,8 @@ class Main:
             0.248, math.pi / 6, pygame.time.get_ticks() / MILISEGUNDO_PARA_SEGUNDO)
         self.gui = GUI()
 
-    def run(self):#loop principal
+    #loop principal
+    def run(self):
 
         while self.running:
             for event in pygame.event.get():
@@ -250,7 +264,7 @@ class Main:
                     self.running = False
 
             self.clock.tick(self.framerate)#limita a taxa de quadros por segundo
-            self.window.fill((204, 204, 204))
+            self.window.fill((204, 204, 204))#cor de fundo da janela
             self.pendulo.exec(self.window)
             atualizaParametros = self.gui.exec(self.window, self.pendulo.energiacinetica, self.pendulo.energiapotencial, self.pendulo.energiaMax)
             if atualizaParametros == CLICOU:
